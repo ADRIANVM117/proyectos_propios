@@ -1,0 +1,212 @@
+#Seleccionamos la base de datos a usar
+data(hprice1)
+
+#Seleciionamos las variables a analizar
+base<-select(hprice1,
+             price,lotsize,sqrft,bdrms)
+
+#############################################
+#Prueba WHITE SIMPLIFICADA
+#############################################
+#Paso 1: Escribir la hipótesis nula
+#H0: El modelo es Homocedástico
+#H1: El modelo es Heterocedástico
+
+#Paso 2: Estimar la regresión de interés
+modelo_1<-lm(formula = price~lotsize+sqrft+bdrms,
+             data = base)
+
+#Paso 3: Extraer variables necesarias para la prueba
+u2<-resid(modelo_1)^2
+y_hat<-fitted(modelo_1)
+
+#Paso 4: Estimar la regresión auxiliar
+modelo_aux<-lm(formula = u2~y_hat+I(y_hat^2),
+               data = base)
+
+#Paso 5: Concluir con base en el estadístico F global/valor-p
+stargazer(modelo_aux,digits = 3,type = "text",
+          style = "aer",
+          dep.var.labels = c("Residuales Cuadráticos"),
+          covariate.labels = c("Ajustados","Ajustados Cuadráticos","Intercepto"),
+          keep.stat = c("n","rsq","f"))
+#Concluimos que se RECHAZA H0 al 1%, basándonos en la tabla de stargazer.
+#Lo que significa que con el modelo se tiene evidencia de la existencia de 
+#ERRORES HETEROCEDÁSTICOS
+#Por lo que, se tienen que realizar algunas correcciones a los errores estándar para poder
+#realizar inferencia estadística válida
+############################################################################################
+##########################################################################################33
+#Seleccionamos la base de datos a usar
+data(hprice1)
+#Seleciionamos las variables relevantes
+base <- hprice1 %>% 
+  mutate(log_price = log(price))%>% 
+  select(log_price,lotsize,sqrft,bdrms)
+#Modelo
+modelo_log<-lm(formula = log_price~lotsize+sqrft+bdrms, data = base)
+# Residuales al cuadrado y valores ajustados  
+u2<-resid(modelo_log)^2
+y_hat<-fitted(modelo_log)
+#Modelo Auxiliar
+modelo_aux_log<-lm(formula = u2~y_hat+I(y_hat^2), data = base)
+# prueba F y resultados
+stargazer(modelo_aux,modelo_aux_log,digits = 5,type = "text",
+          style = "aer",
+          dep.var.labels = c("Residuales Cuadráticos"),
+          column.labels = c("Modelo_Aux", "Modelo_Aux_LOG"),
+          covariate.labels = c("Ajustados","Ajustados Cuadráticos","Intercepto"),
+          keep.stat = c("n","rsq","f"))
+
+
+
+#Cargamos las librerías a usar
+pacman::p_load(tidyverse,
+               wooldridge,
+               stargazer,
+               car,
+               lmtest)
+
+#Seleccionamos la base de datos a usar
+data(vote1)
+names(vote1)
+#Seleciionamos las variables a analizar
+base <- vote1 %>% 
+  mutate(log_expendA = log(expendA),
+         log_expendB = log(expendB))%>% 
+  select(voteA, prtystrA,democA ,  log_expendA, log_expendB)
+
+
+# MODELO
+modelo_1<-lm(formula = voteA~prtystrA + democA + log_expendA + log_expendB,
+             data = base)
+# residuales modelo 
+u2<-resid(modelo_1)
+# modelo auxiliar 
+modelo_aux_1<-lm(formula = u2~prtystrA + democA + log_expendA + log_expendB,
+                 data = base)
+
+# Presentacion de resultados
+stargazer(modelo_aux_1, digits = 5,
+          type = "text", style = "aer",
+          dep.var.labels = c("Residuales"))
+########################################################
+#Prueba BP
+########################################################
+#Paso 1: Escribir la hipótesis nula
+#H0: El modelo es Homocedástico
+#H1: El modelo es Heterocedástico
+
+#Paso 2: Estimar la regresión de interés
+modelo_base<-lm(formula = voteA~prtystrA + democA + log_expendA + log_expendB,
+                data = base)
+
+#Paso 3: Extraer variables necesarias para la prueba
+u2<-resid(modelo_base)^2
+
+#Paso 4: Estimar la regresión auxiliar
+auxBP<-lm(formula = u2~prtystrA + democA + log_expendA + log_expendB,
+          data = base)
+
+#Paso 5: Concluir con base en el estadístico F global/valor-p
+stargazer(auxBP,digits = 5,type = "text",
+          style = "aer",
+          dep.var.labels = c("Residuales Cuadráticos"),
+          
+          keep.stat = c("n","rsq","f"))
+#Concluimos que se RECHAZA H0 al 1%, basándonos en la tabla de stargazer.
+#Lo que significa que con el modelo se tiene evidencia de la existencia de 
+#ERRORES HETEROCEDÁSTICOS
+#Por lo que, se tienen que realizar algunas correcciones a los errores estándar para poder
+#realizar inferencia estadística válida
+
+#############################################
+#Prueba WHITE SIMPLIFICADA
+#############################################
+#Paso 1: Escribir la hipótesis nula
+#H0: El modelo es Homocedástico
+#H1: El modelo es Heterocedástico
+
+#Paso 2: Estimar la regresión de interés
+modelo_w<-lm(formula = voteA~prtystrA + democA + log_expendA + log_expendB,
+             data = base)
+
+#Paso 3: Extraer variables necesarias para la prueba
+u2_w<-resid(modelo_w)^2
+y_hat_w<-fitted(modelo_w)
+
+#Paso 4: Estimar la regresión auxiliar
+modelo_aux_w<-lm(formula = u2_w~y_hat_w+I(y_hat_w^2),
+                 data = base)
+
+#Paso 5: Concluir con base en el estadístico F global/valor-p
+stargazer(modelo_aux_w,digits = 5,type = "text",
+          style = "aer",
+          dep.var.labels = c("Residuales Cuadráticos"),
+          covariate.labels = c("Ajustados","Ajustados Cuadráticos","Intercepto"),
+          keep.stat = c("n","rsq","f"))
+
+
+
+#Seleccionamos la base de datos a usar
+data(ceosal2)
+
+#Seleccionamos las variables a observar
+base_Ej4<-ceosal2 %>% 
+  select(lsalary,sales,profits,mktval)
+
+#Modelo lineal
+modeloEj4_lineal<-lm(formula = lsalary~sales+profits+mktval,
+                     data = base_Ej4)
+
+#Presentamos los resultados
+stargazer(modeloEj4_lineal,digits = 8,type = "text",
+          style = "aer",
+          dep.var.labels = c("log(Salario)"),
+          covariate.labels = c("Ventas","Beneficios",
+                               "Valor de Mercado","Intercepto"))
+
+##############################
+#Realizaremos la prueba RESET
+###############################
+y_hat_4A<-fitted(modeloEj4_lineal)
+
+#Regresión RESET
+modeloEj4A_RESET<-lm(formula = lsalary~sales+profits+mktval+I(y_hat_4A^2)+I(y_hat_4A^3),
+                     data = base_Ej4)
+
+#Prueba F del modelo auxiliar
+linearHypothesis(modeloEj4A_RESET,
+                 c("I(y_hat_4A^2)=0","I(y_hat_4A^3)=0"))
+
+########################################################################3
+Para el inciso B
+#Seleccionamos las variables a observar
+base_Ej4B<-ceosal2 %>% 
+  select(lsalary,sales,lsales,profits,mktval,lmktval)
+
+#Estimamos el modelo lineal
+modeloEj4B_lineal<-lm(formula = lsalary~sales+profits+mktval,
+                      data = base_Ej4B)
+
+#Estimamos el modelo de términos log
+modeloEj4B_log<-lm(formula = lsalary~lsales+profits+lmktval,
+                   data = base_Ej4B)
+
+#Realizamos la Prueba DM
+#Paso 1: Rescatamos los valores ajustados
+y_halin_4B<-fitted(modeloEj4_lineal)
+y_hatlog_4B<-fitted(modeloEj4B_log)
+
+#Paso 2:
+#Si queremos verificar si las variables van en nivel
+modeloEj4B_linealDM<-lm(formula = lsalary~sales+profits+mktval+y_hatlog_4B,
+                        data = base_Ej4B)
+stargazer(modeloEj4B_linealDM,digits = 3,type = "text",style = "aer")
+#Notemos que las varibales NO van en nivel
+
+#Si queremos verificar si las variables van en log
+modeloEj4B_linealDM2<-lm(formula = lsalary~lsales+profits+lmktval+y_halin_4B,
+                         data = base_Ej4B)
+stargazer(modeloEj4B_linealDM2,digits = 3,type = "text",style = "aer")
+#Notemos que las varibales SÍ van en log
